@@ -4,6 +4,7 @@ from django.contrib.auth.models import PermissionsMixin
 from django.utils import timezone
 
 
+
 class UserManager(BaseUserManager):
 
     def _create_user(self, email, password, **extra_fields):
@@ -33,10 +34,11 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
 
     email = models.EmailField(max_length=60, unique=True)
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=30, blank=True)
+    first_name = models.CharField(max_length=30, null=True, blank=True)
+    last_name = models.CharField(max_length=30, null=True, blank=True)
     img = models.ImageField(upload_to='', verbose_name='Photo', blank=True)
-    phone = models.CharField(max_length=13)
+    phone = models.CharField(max_length=13, null=True, blank=True)
+    birthDate = models.DateField(null=True, blank=True)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -45,7 +47,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'phone']
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'password']
 
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)
@@ -53,6 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Key(models.Model):
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
     data = models.CharField(max_length=512, unique=True)
     expire_time = models.DateTimeField()
