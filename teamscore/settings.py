@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'user_authenticate',
     'team',
     'rest_framework',
+    'django_filters',
 ]
 
 # Default django user changed to custom model for this project.
@@ -66,13 +67,14 @@ ROOT_URLCONF = 'teamscore.urls'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_jwt.authentication.JSONWebTokenAuthentication',),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
 }
 
 JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=1),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=3),
     'JWT_AUTH_HEADER_PREFIX': 'Play'
 }
 

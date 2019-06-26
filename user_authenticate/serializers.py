@@ -17,6 +17,7 @@ class UserSerializer(ModelSerializer):
         write_only_fields = ('password',)
         read_only_fields = ('date_joined', 'is_admin', 'is_staff', 'is_active')
 
+
     @transaction.atomic()
     def create(self, attrs):
         """
@@ -66,6 +67,7 @@ class UserSerializer(ModelSerializer):
         user.save()
 
         if player is not None:
-            models.Player.objects.create(user=user, **player)
+            models.Player.objects.update_or_create(user=user, defaults=player)
 
         return user
+

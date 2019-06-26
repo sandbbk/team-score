@@ -37,10 +37,13 @@ class Team(models.Model):
     def __str__(self):
         return self.teamName
 
+    class Meta:
+        ordering = ('teamName',)
+
 
 class Player(models.Model):
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='player')
     role = models.CharField(max_length=10, choices=(('goal', 'goalkeeper'),
                                                     ('def', 'defender'), ('mid', 'midfielder'), ('fwd', 'forward')))
     healthStatus = models.BooleanField(default=True, db_index=True)
@@ -49,8 +52,13 @@ class Player(models.Model):
     district = models.CharField(max_length=32, blank=True, null=True)
 
     def __str__(self):
-        return self.user.last_name
+        full_name = None
+        if self.user.first_name and self.user.last_name:
+            full_name = f"{self.user.first_name}  {self.user.last_name}"
+        return full_name if full_name is not None else self.user.email
 
+    class Meta:
+        ordering = ('user',)
 
 class Event(models.Model):
 

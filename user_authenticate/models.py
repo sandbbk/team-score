@@ -4,7 +4,6 @@ from django.contrib.auth.models import PermissionsMixin
 from django.utils import timezone
 
 
-
 class UserManager(BaseUserManager):
 
     def _create_user(self, email, password, **extra_fields):
@@ -52,6 +51,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
         super(User, self).save(*args, **kwargs)
         return self
+
+    class Meta:
+        ordering = ('first_name', 'last_name', 'email')
 
 
 class Key(models.Model):

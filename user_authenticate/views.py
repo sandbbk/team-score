@@ -11,6 +11,7 @@ from rest_framework import status
 from rest_framework import permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import (RetrieveUpdateDestroyAPIView, ListAPIView, ListCreateAPIView)
+
 from user_authenticate.serializers import UserSerializer
 from user_authenticate.models import (User, Key)
 from user_authenticate.extentions import key_expired
@@ -21,11 +22,13 @@ class UserCreate(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
+
         data = request.data
         serializer = UserSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        serializer.data.pop('password')
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -50,7 +53,7 @@ class UserDetail(RetrieveUpdateDestroyAPIView):
         if img:
             serializer_data = {'img': img}
         else:
-            serializer_data = request.data.get('user', {})
+            serializer_data = request.data
 
         serializer = UserSerializer(request.user, data=serializer_data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -58,16 +61,11 @@ class UserDetail(RetrieveUpdateDestroyAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # def destroy(self, request, **kwargs):
-    #     user = self.get_object()
-    #     user.delete()
-    #
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 class UserList(ListAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
 
 
 @api_view(['POST'])
@@ -82,6 +80,7 @@ def authenticate_user(request):
             raise KeyError
     except KeyError:
         res = {'error': 'Wrong password'}
+        return Response(res, status=status.HTTP_401_UNAUTHORIZED)
     except User.DoesNotExist:
         res = {'error': 'Wrong email'}
         return Response(res, status=status.HTTP_401_UNAUTHORIZED)
@@ -127,6 +126,7 @@ def activate(request, link):
         response = {'msg': f'Error: {repr(e)}'}
     except Exception as e:
         response = {'msg': f'Error: {repr(e)}'}
-    return Response(response)
+    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
 
 

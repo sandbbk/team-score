@@ -12,7 +12,7 @@ from rest_framework.routers import DefaultRouter
 #         'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'
 #      })
 router = DefaultRouter()
-router.register(r'teams', TeamViewSet)
+router.register(r'teams', TeamViewSet, basename='teams')
 
 urlpatterns = [
     path('', include(router.urls)),

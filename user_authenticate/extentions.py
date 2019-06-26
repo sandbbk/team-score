@@ -24,6 +24,7 @@ def key_expired(obj):
         key = Key.objects.get(data=obj)
     return (True, key) if key.expire_time <= timezone.now() else (False, key)
 
+
 def is_zombie(user):
     """
         Checks if user is active, and if it False checks user's key for expiration,
@@ -41,6 +42,19 @@ def is_zombie(user):
         return True
 
 
+def cap_to_player(request):
+
+    # Auto update players field with captain.pk and team.admin with user.
+
+    players = request.data.get('players')
+    captain = request.data.get('captain')
+
+    if players is None:
+        players = []
+    if captain not in players:
+        players.append(captain)
+    request.data.update(admin=request.user.pk, players=players)
+    return request.data
 
 
 

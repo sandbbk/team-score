@@ -11,6 +11,7 @@ class CompetitionSerializer(ModelSerializer):
 
 
 class UseFieldSerializer(ModelSerializer):
+
     class Meta:
         model = Field
         fields = ('id', 'name', 'city', 'district')
@@ -33,6 +34,18 @@ class PlayerSerializer(ModelSerializer):
         fields = ('id', 'role', 'healthStatus', 'number', 'city', 'district', 'teams')
 
 
+class RetrieveTeamSerializer(ModelSerializer):
+
+    players = PlayerSerializer(many=True)
+
+    class Meta:
+
+        model = Team
+        partial = True
+        fields = ('id', 'teamName', 'city', 'admin', 'captain', 'favoriteField', 'players')
+        depth = 1
+
+
 class TeamSerializer(ModelSerializer):
 
     class Meta:
@@ -45,6 +58,7 @@ class TeamSerializer(ModelSerializer):
 class EventSerializer(ModelSerializer):
 
     class Meta:
+
         model = Event
         fields = ('id', 'competition', 'typeOfEvent', 'date', 'startTime', 'status', 'teamA', 'teamB', 'field', 'referee')
 
