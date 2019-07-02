@@ -41,7 +41,6 @@ class RetrieveTeamSerializer(ModelSerializer):
     class Meta:
 
         model = Team
-        partial = True
         fields = ('id', 'teamName', 'city', 'admin', 'captain', 'favoriteField', 'players')
         depth = 1
 
@@ -51,16 +50,7 @@ class TeamSerializer(ModelSerializer):
     class Meta:
 
         model = Team
-        partial = True
         fields = ('id', 'teamName', 'city', 'admin', 'captain', 'favoriteField', 'players')
-
-
-class EventSerializer(ModelSerializer):
-
-    class Meta:
-
-        model = Event
-        fields = ('id', 'competition', 'typeOfEvent', 'date', 'startTime', 'status', 'teamA', 'teamB', 'field', 'referee')
 
 
 class GoalSerializer(ModelSerializer):
@@ -83,3 +73,25 @@ class SubstitutionSerializer(ModelSerializer):
         model = Substitution
         fields = ('id', 'event', 'playerIn', 'playerOut', 'inTeam', 'time')
 
+
+class EventSerializer(ModelSerializer):
+
+    class Meta:
+
+        model = Event
+        fields = ('id', 'competition', 'typeOfEvent', 'date', 'startTime', 'status', 'teamA', 'teamB', 'field',
+                  'goals', 'cards', 'substitutions')
+
+
+class RetrieveEventSerializer(ModelSerializer):
+
+    goals = GoalSerializer(many=True)
+    cards = CardSerializer(many=True)
+    substitutions = SubstitutionSerializer(many=True)
+
+    class Meta:
+
+        model = Event
+        fields = ('id', 'competition', 'typeOfEvent', 'date', 'startTime', 'status', 'teamA', 'teamB', 'field',
+                  'goals', 'cards', 'substitutions')
+        depth = 1
