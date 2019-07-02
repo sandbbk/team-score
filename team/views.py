@@ -49,3 +49,43 @@ class TeamViewSet(viewsets.ModelViewSet):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
+
+
+class EventViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.IsAuthenticated, HasPlayerProfile)
+
+    def get_queryset(self):
+
+        queryset = Event.objects.all()
+        user = self.request.user
+        player = Player.objects.get(user=user)
+        events = self.request.query_params.get('events')
+
+        if events == "my":
+            queryset = queryset.filter(teamA__players=player) | queryset.filter(teamB__players=player)\
+                       | queryset.filter(teamA__admin=user) | queryset.filter(teamB__admin=user)
+        return queryset
+
+    def get_serializer_class(self):
+
+        if self.action in ('retrieve', 'list'):
+            return RetrieveEventSerializer
+        return EventSerializer
+
+    def update(self, request, *args, **kwargs):
+
+        event = get_object_or_404(Event, pk=self.kwargs['pk'])
+        #self.check_object_permissions(request, event)
+
+        extra_event = {}
+        goals = request.data.pop('goals')
+        cards = request.data.pop('cards')
+        substitutions = request.data.pop('substitutions')
+        extra_event.update(goals=goals, cards=cards, substitutions=substitutions)
+
+
+        serializer = self.get_serializer(event, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
