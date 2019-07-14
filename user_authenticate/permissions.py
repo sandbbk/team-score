@@ -34,3 +34,16 @@ class IsTeamAdminOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return request.user == obj.admin
+
+
+class IsEventAdminOrReadOnly(BasePermission):
+    """
+        Allows extra operation with event to TeamA.admin
+        or TeamB.admin.
+    """
+
+    def has_object_permission(self, request, view, obj):
+
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user == obj.teamA.admin or request.user == obj.teamB.admin

@@ -63,6 +63,7 @@ class Player(models.Model):
     class Meta:
         ordering = ('user',)
 
+
 class Event(models.Model):
 
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE, blank=True, null=True)
@@ -78,18 +79,19 @@ class Event(models.Model):
 
     class Meta:
         ordering = ('date',)
+        unique_together = ('date', 'startTime', 'teamA', 'teamB')
 
     @property
     def stat(self):
 
-        teamAGoals = self.goal_set.filter(scoringTeam=self.teamA).count()
-        teamBGoals = self.goal_set.filter(scoringTeam=self.teamB).count()
-        teamACardsYellow = self.card_set.filter(receivedTeam=self.teamA, color='yellow').count()
-        teamBCardsYellow = self.card_set.filter(receivedTeam=self.teamB, color='yellow').count()
-        teamACardsRed = self.card_set.filter(receivedTeam=self.teamA, color='red').count()
-        teamBCardsRed = self.card_set.filter(receivedTeam=self.teamA, color='red').count()
-        teamAsubstitutions = self.substitution_set.filter(inTeam=self.teamA).count()
-        teamBsubstitutions = self.substitution_set.filter(inTeam=self.teamB).count()
+        teamAGoals = self.goals.filter(scoringTeam=self.teamA).count()
+        teamBGoals = self.goals.filter(scoringTeam=self.teamB).count()
+        teamACardsYellow = self.cards.filter(receivedTeam=self.teamA, color='yellow').count()
+        teamBCardsYellow = self.cards.filter(receivedTeam=self.teamB, color='yellow').count()
+        teamACardsRed = self.cards.filter(receivedTeam=self.teamA, color='red').count()
+        teamBCardsRed = self.cards.filter(receivedTeam=self.teamA, color='red').count()
+        teamAsubstitutions = self.substitutions.filter(inTeam=self.teamA).count()
+        teamBsubstitutions = self.substitutions.filter(inTeam=self.teamB).count()
 
         if self.status != 'is over':
             winner = None
@@ -100,23 +102,23 @@ class Event(models.Model):
             looser = None
             draw = True
         elif teamAGoals > teamBGoals:
-            winner = self.teamA
-            looser = self.teamB
+            winner = self.teamA.teamName
+            looser = self.teamB.teamName
             draw = False
         else:
             winner = self.teamB.id
             looser = self.teamA.id
             draw = False
-        return {'winner': winner, 'looser': looser, 'draw': draw, 'teamA': {'id': self.teamA.id, 'goals': teamAGoals,
+        return {'stat': {'winner': winner, 'looser': looser, 'draw': draw, 'teamA_': {'id': self.teamA.id, 'goals': teamAGoals,
                 'cardsYellow': teamACardsYellow, 'cardsRed': teamACardsRed, 'substitutions': teamAsubstitutions},
-                'teamB': {'id': self.teamB.id, 'goals': teamBGoals, 'cardsYellow': teamBCardsYellow,
-                'cardsRed': teamBCardsRed, 'substitutions': teamBsubstitutions}}
+                'teamB_': {'id': self.teamB.id, 'goals': teamBGoals, 'cardsYellow': teamBCardsYellow,
+                'cardsRed': teamBCardsRed, 'substitutions': teamBsubstitutions}}}
 
 
 class Goal(models.Model):
 
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='goals')
-    author = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='goals')
+    author = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='my_goals')
     assistant = models.ForeignKey(Player, on_delete=models.CASCADE, null=True, blank=True)
     scoringTeam = models.ForeignKey(Team, on_delete=models.CASCADE)
     time = models.TimeField()
@@ -125,7 +127,7 @@ class Goal(models.Model):
 
     class Meta:
         ordering = ('event',)
-
+        unique_together = ('event', 'time')
 
 class Card(models.Model):
 
@@ -137,6 +139,7 @@ class Card(models.Model):
 
     class Meta:
         ordering = ('event',)
+        unique_together = ('event', 'author')
 
 
 class Substitution(models.Model):
@@ -149,3 +152,4 @@ class Substitution(models.Model):
 
     class Meta:
         ordering = ('event',)
+        unique_together = ('event', 'playerIn', 'playerOut')

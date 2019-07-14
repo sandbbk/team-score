@@ -56,5 +56,3 @@ def cap_to_player(request):
     request.data.update(admin=request.user.pk, players=players)
     return request.data
 
-
-

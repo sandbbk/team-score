@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import (status, viewsets, permissions)
 
 from team.serializers import *
-from team.models import Team
-from user_authenticate.permissions import (HasPlayerProfile, IsTeamAdminOrReadOnly)
+from team.models import (Team, Player)
+from user_authenticate.permissions import (HasPlayerProfile, IsTeamAdminOrReadOnly, IsEventAdminOrReadOnly)
 from user_authenticate.extentions import cap_to_player
 
 
@@ -52,7 +52,19 @@ class TeamViewSet(viewsets.ModelViewSet):
 
 
 class EventViewSet(viewsets.ModelViewSet):
-    permission_classes = (permissions.IsAuthenticated, HasPlayerProfile)
+
+    permission_classes = (permissions.IsAuthenticated, HasPlayerProfile, IsEventAdminOrReadOnly)
+
+    def make_serializer(self, request, obj=None):
+        if obj is not None:
+            serializer = self.get_serializer(obj, data=request.data, partial=True)
+        else:
+            serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return serializer
 
     def get_queryset(self):
 
@@ -72,20 +84,26 @@ class EventViewSet(viewsets.ModelViewSet):
             return RetrieveEventSerializer
         return EventSerializer
 
-    def update(self, request, *args, **kwargs):
-
-        event = get_object_or_404(Event, pk=self.kwargs['pk'])
-        #self.check_object_permissions(request, event)
-
-        extra_event = {}
-        goals = request.data.pop('goals')
-        cards = request.data.pop('cards')
-        substitutions = request.data.pop('substitutions')
-        extra_event.update(goals=goals, cards=cards, substitutions=substitutions)
-
-
-        serializer = self.get_serializer(event, data=request.data, partial=True)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
+    # def update(self, request, *args, **kwargs):
+    #
+    #     event = get_object_or_404(Event, pk=self.kwargs['pk'])
+    #     self.check_object_permissions(request, event)
+    #
+    #     return Response(self.make_serializer(request, obj=event).data, status=status.HTTP_205_RESET_CONTENT)
+
+    def retrieve(self, request, *args, **kwargs):
+
+        event = get_object_or_404(Event, pk=self.kwargs['pk'])
+        serializer = self.get_serializer(event)
+
+        total_data = {}
+        total_data.update(serializer.data)
+        total_data.update(event.stat)
+
+        return Response(data=total_data, status=status.HTTP_200_OK)
