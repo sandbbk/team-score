@@ -90,12 +90,12 @@ class EventViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    # def update(self, request, *args, **kwargs):
-    #
-    #     event = get_object_or_404(Event, pk=self.kwargs['pk'])
-    #     self.check_object_permissions(request, event)
-    #
-    #     return Response(self.make_serializer(request, obj=event).data, status=status.HTTP_205_RESET_CONTENT)
+    def update(self, request, *args, **kwargs):
+
+        event = get_object_or_404(Event, pk=self.kwargs['pk'])
+        self.check_object_permissions(request, event)
+
+        return Response(self.make_serializer(request, obj=event).data, status=status.HTTP_205_RESET_CONTENT)
 
     def retrieve(self, request, *args, **kwargs):
 

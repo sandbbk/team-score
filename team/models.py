@@ -81,6 +81,7 @@ class Event(models.Model):
         ordering = ('date',)
         unique_together = ('date', 'startTime', 'teamA', 'teamB')
 
+
     @property
     def stat(self):
 
@@ -128,6 +129,7 @@ class Goal(models.Model):
     class Meta:
         ordering = ('event',)
         unique_together = ('event', 'time')
+
 
 class Card(models.Model):
 

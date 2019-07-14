@@ -76,9 +76,9 @@ class SubstitutionSerializer(ModelSerializer):
 
 class EventSerializer(ModelSerializer):
 
-    # goals = GoalSerializer(many=True)
-    # cards = CardSerializer(many=True)
-    # substitutions = SubstitutionSerializer(many=True)
+    goals = GoalSerializer(many=True)
+    cards = CardSerializer(many=True)
+    substitutions = SubstitutionSerializer(many=True)
 
     class Meta:
         model = Event
