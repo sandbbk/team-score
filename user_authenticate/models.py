@@ -59,5 +59,5 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Key(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
-    data = models.CharField(max_length=512, unique=True)
+    data = models.CharField(max_length=255, unique=True)
     expire_time = models.DateTimeField()

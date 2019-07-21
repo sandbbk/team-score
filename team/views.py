@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.db import IntegrityError
 from rest_framework.response import Response
 from rest_framework import (status, viewsets, permissions)
 
@@ -19,7 +20,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         teams = self.request.query_params.get('teams')
 
         if teams == "my":
-            queryset = player.team_set.all()
+            queryset = player.teams.all()
         return queryset
 
     def get_serializer_class(self):
@@ -56,15 +57,28 @@ class EventViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, HasPlayerProfile, IsEventAdminOrReadOnly)
 
     def make_serializer(self, request, obj=None):
+
         if obj is not None:
-            serializer = self.get_serializer(obj, data=request.data, partial=True)
+            serializer = self.get_serializer(obj, data=request.data, partial=True, nested_id=True)
         else:
             serializer = self.get_serializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
         return serializer
+
+    def make_response(self, request, obj=None):
+
+        try:
+            serializer = self.make_serializer(request, obj=obj)
+            data = serializer.data
+            status_ = status.HTTP_201_CREATED
+
+        except IntegrityError as e:
+            data = {'msg': repr(e)}
+            status_ = status.HTTP_400_BAD_REQUEST
+
+        return data, status_
 
     def get_queryset(self):
 
@@ -85,17 +99,18 @@ class EventViewSet(viewsets.ModelViewSet):
         return EventSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        data, status_ = self.make_response(request)
+        return Response(data, status=status_)
 
     def update(self, request, *args, **kwargs):
 
         event = get_object_or_404(Event, pk=self.kwargs['pk'])
         self.check_object_permissions(request, event)
 
-        return Response(self.make_serializer(request, obj=event).data, status=status.HTTP_205_RESET_CONTENT)
+        data, status_ = self.make_response(request, obj=event)
+
+        return Response(data, status=status_)
 
     def retrieve(self, request, *args, **kwargs):
 

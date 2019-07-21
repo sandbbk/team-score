@@ -141,7 +141,7 @@ class Card(models.Model):
 
     class Meta:
         ordering = ('event',)
-        unique_together = ('event', 'author')
+        unique_together = ('event', 'author', 'time')
 
 
 class Substitution(models.Model):
