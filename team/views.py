@@ -113,7 +113,6 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response(data, status=status_)
 
     def retrieve(self, request, *args, **kwargs):
-
         event = get_object_or_404(Event, pk=self.kwargs['pk'])
         serializer = self.get_serializer(event)
 

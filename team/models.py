@@ -81,28 +81,32 @@ class Event(models.Model):
         ordering = ('date',)
         unique_together = ('date', 'startTime', 'teamA', 'teamB')
 
-
     @property
     def stat(self):
 
-        teamAGoals = self.goals.filter(scoringTeam=self.teamA).count()
-        teamBGoals = self.goals.filter(scoringTeam=self.teamB).count()
-        teamACardsYellow = self.cards.filter(receivedTeam=self.teamA, color='yellow').count()
-        teamBCardsYellow = self.cards.filter(receivedTeam=self.teamB, color='yellow').count()
-        teamACardsRed = self.cards.filter(receivedTeam=self.teamA, color='red').count()
-        teamBCardsRed = self.cards.filter(receivedTeam=self.teamA, color='red').count()
-        teamAsubstitutions = self.substitutions.filter(inTeam=self.teamA).count()
-        teamBsubstitutions = self.substitutions.filter(inTeam=self.teamB).count()
+        # This property returns statistics for an event
+
+        team_a_goals = self.goals.filter(scoringTeam=self.teamA).count()
+        team_b_goals = self.goals.filter(scoringTeam=self.teamB).count()
+
+        team_a_cards_yellow = self.cards.filter(receivedTeam=self.teamA, color='yellow').count()
+        team_b_cards_yellow = self.cards.filter(receivedTeam=self.teamB, color='yellow').count()
+
+        team_a_cards_red = self.cards.filter(receivedTeam=self.teamA, color='red').count()
+        team_b_cards_red = self.cards.filter(receivedTeam=self.teamA, color='red').count()
+
+        team_a_substitutions = self.substitutions.filter(inTeam=self.teamA).count()
+        team_b_substitutions = self.substitutions.filter(inTeam=self.teamB).count()
 
         if self.status != 'is over':
             winner = None
             looser = None
             draw = False
-        elif teamAGoals == teamBGoals:
+        elif team_a_goals == team_b_goals:
             winner = None
             looser = None
             draw = True
-        elif teamAGoals > teamBGoals:
+        elif team_a_goals > team_b_goals:
             winner = self.teamA.teamName
             looser = self.teamB.teamName
             draw = False
@@ -110,10 +114,10 @@ class Event(models.Model):
             winner = self.teamB.id
             looser = self.teamA.id
             draw = False
-        return {'stat': {'winner': winner, 'looser': looser, 'draw': draw, 'teamA_': {'id': self.teamA.id, 'goals': teamAGoals,
-                'cardsYellow': teamACardsYellow, 'cardsRed': teamACardsRed, 'substitutions': teamAsubstitutions},
-                'teamB_': {'id': self.teamB.id, 'goals': teamBGoals, 'cardsYellow': teamBCardsYellow,
-                'cardsRed': teamBCardsRed, 'substitutions': teamBsubstitutions}}}
+        return {'stat': {'winner': winner, 'looser': looser, 'draw': draw, 'teamA_': {'id': self.teamA.id, 'goals': team_a_goals,
+                'cardsYellow': team_a_cards_yellow, 'cardsRed': team_a_cards_red, 'substitutions': team_a_substitutions},
+                'teamB_': {'id': self.teamB.id, 'goals': team_b_goals, 'cardsYellow': team_b_cards_yellow,
+                'cardsRed': team_b_cards_red, 'substitutions': team_b_substitutions}}}
 
 
 class Goal(models.Model):

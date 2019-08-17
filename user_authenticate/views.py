@@ -80,10 +80,10 @@ def authenticate_user(request):
             raise KeyError
     except KeyError:
         res = {'error': 'Wrong password'}
-        return Response(res, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(res, status=status.HTTP_403_FORBIDDEN)
     except User.DoesNotExist:
         res = {'error': 'Wrong email'}
-        return Response(res, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(res, status=status.HTTP_403_FORBIDDEN)
 
     jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 
@@ -122,8 +122,6 @@ def activate(request, link):
 
     except Key.DoesNotExist:
         response = {'msg': 'Error: invalid link!'}
-    except KeyError as e:
-        response = {'msg': f'Error: {repr(e)}'}
     except Exception as e:
         response = {'msg': f'Error: {repr(e)}'}
     return Response(response, status=status.HTTP_400_BAD_REQUEST)

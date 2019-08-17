@@ -44,13 +44,49 @@ INSTALLED_APPS = [
     'team',
     'rest_framework',
     'django_filters',
+
 ]
 
 # Default django user changed to custom model for this project.
 
 AUTH_USER_MODEL = 'user_authenticate.User'
 
+# CORS middleware settings
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'access-control-request-headers',
+]
+
+CORS_HEADERS = {
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Headers": str(CORS_ALLOW_HEADERS).strip('[]'),
+    "Access-Control-Allow-Methods": str(CORS_ALLOW_METHODS).strip('[]'),
+    "Access-Control-Max-Age": "86400"
+}
+
 MIDDLEWARE = [
+
+    'team.middleware.AllowCorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -58,6 +94,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'team.middleware.LoggerMiddleware',
+
 ]
 
 ROOT_URLCONF = 'teamscore.urls'
@@ -68,7 +106,12 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_jwt.authentication.JSONWebTokenAuthentication',),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
-    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ]
+
 }
 
 JWT_AUTH = {
@@ -160,3 +203,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/img')
+
+
+# Logging info.
+
+LOG_META_INFO = ('REMOTE_ADDR', 'REQUEST')
+
+LOG_FILE = os.path.join(BASE_DIR, 'teamscore.log')
