@@ -15,6 +15,7 @@ from rest_framework.generics import (RetrieveUpdateDestroyAPIView, ListAPIView, 
 from user_authenticate.serializers import UserSerializer
 from user_authenticate.models import (User, Key)
 from user_authenticate.extentions import key_expired
+from team.models import (Event, )
 
 
 class UserCreate(APIView):
@@ -41,7 +42,16 @@ class UserDetail(RetrieveUpdateDestroyAPIView):
     def get(self, request, *args, **kwargs):
         serializer = self.serializer_class(request.user)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # statistics for player's profile
+
+        player = request.user.player
+
+        data = {}
+        data.update(serializer.data)
+        data.update(player.stat)
+        if data.get('password'):
+            del data['password']
+        return Response(data, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
         img = None

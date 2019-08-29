@@ -51,6 +51,13 @@ class TeamViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
 
+    # def retrieve(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     data = {}
+    #     data.update(serializer.data)
+    #     data.update(team.stat)
+    #     return Response(data=data, status=status.HTTP_200_OK)
+
 
 class EventViewSet(viewsets.ModelViewSet):
 
@@ -88,8 +95,8 @@ class EventViewSet(viewsets.ModelViewSet):
         events = self.request.query_params.get('events')
 
         if events == "my":
-            queryset = queryset.filter(teamA__players=player) | queryset.filter(teamB__players=player)\
-                       | queryset.filter(teamA__admin=user) | queryset.filter(teamB__admin=user)
+            events_team_a, events_team_b = player.events()
+            queryset = events_team_a | events_team_b
         return queryset
 
     def get_serializer_class(self):

@@ -63,6 +63,52 @@ class Player(models.Model):
     class Meta:
         ordering = ('user',)
 
+    def events(self):
+        events_all = Event.objects.all()
+        return events_all.filter(teamA__players=self), events_all.filter(teamB__players=self)
+
+    @property
+    def stat(self, team_id=None, competition_id=None):
+        # calculates statistics for the player belong to particular team.
+        my_events_a, my_events_b = self.events()
+
+        if team_id:
+            my_events = my_events_a.filter(teamA__id=team_id) | my_events_b.filter(teamB__id=team_id)
+        if competition_id:
+            my_events = my_events.filter(competition__id=competition_id)
+        else:
+            my_events = my_events_a | my_events_b
+
+        wins, looses, draws = 0, 0, 0
+
+        # stat for events, where player in team A.
+        for event in my_events_a:
+            stat = event.stat['stat']
+            if stat['winner'] == event.teamA.id:
+                wins += 1
+            elif stat['winner'] == event.teamB.id:
+                looses += 1
+            elif stat['draw']:
+                draws += 1
+
+        # stat for events, where player in team B.
+        for event in my_events_b:
+            stat = event.stat['stat']
+            if stat['winner'] == event.teamB.id:
+                wins += 1
+            elif stat['winner'] == event.teamA.id:
+                looses += 1
+            elif stat['draw']:
+                draws += 1
+        my_goals = Goal.objects.filter(author=self)
+        goals = my_goals.count()
+        assists = Goal.objects.filter(assistant=self).count()
+        goals_plus_assist = my_goals.filter(assistant=self).count()
+        penalties = my_goals.filter(condition='penalty').count()
+
+        return {'stat': {'wins': wins, 'loses': looses, 'draws': draws, 'goals': goals, 'assists': assists,
+                         'goals_plus_assist': goals_plus_assist, 'penalties': penalties}}
+
 
 class Event(models.Model):
 
@@ -107,8 +153,8 @@ class Event(models.Model):
             looser = None
             draw = True
         elif team_a_goals > team_b_goals:
-            winner = self.teamA.teamName
-            looser = self.teamB.teamName
+            winner = self.teamA.id
+            looser = self.teamB.id
             draw = False
         else:
             winner = self.teamB.id
@@ -128,7 +174,7 @@ class Goal(models.Model):
     scoringTeam = models.ForeignKey(Team, on_delete=models.CASCADE)
     time = models.TimeField()
     condition = models.CharField(choices=(('in game', 'in game'), ('free', 'free'), ('corner', 'corner'),
-                                          ('penalty', 'penalty'), ('penalty 11m', 'penalty 11m')), max_length=11)
+                                          ('penalty', 'penalty')), max_length=11)
 
     class Meta:
         ordering = ('event',)
@@ -138,7 +184,7 @@ class Goal(models.Model):
 class Card(models.Model):
 
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='cards')
-    author = models.ForeignKey(Player, on_delete=models.CASCADE)
+    author = models.ForeignKey(Player, on_delete=models, related_name='my_cards')
     time = models.TimeField()
     color = models.CharField(choices=(('yellow', 'yellow'), ('red', 'red')), max_length=6)
     receivedTeam = models.ForeignKey(Team, on_delete=models.CASCADE)
