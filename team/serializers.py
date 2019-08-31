@@ -124,6 +124,29 @@ class EventSerializer(ModelSerializer):
         """
 
         self.set_extra_args(validated_data)
+
+        # Check when player in both teams, then raise exception.
+
+        def val_from_dict(iterable):
+            out = []
+            for item in iterable:
+                out.extend(item.values())
+            return out
+
+        players_A = val_from_dict(validated_data.get('teamA').players.values('id'))
+        players_B = val_from_dict(validated_data.get('teamB').players.values('id'))
+
+        def get_matched_ids(a,b):
+            matched_ids = []
+            for id in players_A:
+                if id in players_B:
+                    matched_ids.append(id)
+            return matched_ids
+
+        matched = get_matched_ids(players_A, players_B)
+
+        if matched:
+            raise IntegrityError(f'Players with ids {matched} are in both teams')
         event = super(EventSerializer, self).create(validated_data)
         event.save()
 

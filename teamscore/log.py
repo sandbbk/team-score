@@ -1,6 +1,8 @@
 import datetime
 import json
 from django.conf import settings
+from django.http import request as Req
+from rest_framework.response import Response
 
 
 class Log(object):
@@ -17,8 +19,9 @@ class Log(object):
 
         if not response:
             if request.method not in ('GET', 'OPTIONS'):
-                req_data = {k: v for k, v in (json.loads(self.request.body)).items() if k != 'password'}
-                self.lines.append(f'RAW data: {str(req_data)};\t')
+                if not isinstance(request, Req.HttpRequest):
+                    req_data = {k: v for k, v in (json.loads(self.request.body)).items() if k != 'password'}
+                    self.lines.append(f'RAW data: {str(req_data)};\t')
 
             if self.request.user.is_anonymous:
                 user = "anonymous;\t"
@@ -47,8 +50,9 @@ class Log(object):
             resp = {k: v for k, v in response.items()}
             self.lines.append(f'Res_Headers: {str(resp)};\t')
 
-            content = json.loads(response.content)
-            self.lines.append('Content: ' + str(content) + "\n")
+            if isinstance(response, Response):
+                content = json.loads(response.content)
+                self.lines.append('Content: ' + str(content) + "\n")
             self.lines.append('\n')
 
         # Exception content.

@@ -63,21 +63,27 @@ class Player(models.Model):
     class Meta:
         ordering = ('user',)
 
-    def events(self):
+    def get_my_events(self):
         events_all = Event.objects.all()
         return events_all.filter(teamA__players=self), events_all.filter(teamB__players=self)
 
     @property
     def stat(self, team_id=None, competition_id=None):
         # calculates statistics for the player belong to particular team.
-        my_events_a, my_events_b = self.events()
+
+        my_events_a, my_events_b = self.get_my_events()
+        my_events = my_events_a | my_events_b
+
+        my_cards = Card.objects.filter(author=self)
 
         if team_id:
             my_events = my_events_a.filter(teamA__id=team_id) | my_events_b.filter(teamB__id=team_id)
+            my_cards = my_cards.filter(receivedTeam__id=team_id)
         if competition_id:
             my_events = my_events.filter(competition__id=competition_id)
-        else:
-            my_events = my_events_a | my_events_b
+            my_cards = my_cards.filter(event__competition__id=competition_id)
+
+        my_events = my_events.count()
 
         wins, looses, draws = 0, 0, 0
 
@@ -106,8 +112,13 @@ class Player(models.Model):
         goals_plus_assist = my_goals.filter(assistant=self).count()
         penalties = my_goals.filter(condition='penalty').count()
 
-        return {'stat': {'wins': wins, 'loses': looses, 'draws': draws, 'goals': goals, 'assists': assists,
-                         'goals_plus_assist': goals_plus_assist, 'penalties': penalties}}
+        # Cards statistics.
+        yellow_cards = my_cards.filter(color='yellow').count()
+        red_cards = my_cards.filter(color='red').count()
+
+        return {'stat': {'events': my_events, 'wins': wins, 'loses': looses, 'draws': draws, 'goals': goals, 'assists': assists,
+                         'goals_plus_assist': goals_plus_assist, 'penalties': penalties, 'yellow_cards': yellow_cards,
+                         'red_cards': red_cards}}
 
 
 class Event(models.Model):
