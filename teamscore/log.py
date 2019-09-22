@@ -50,9 +50,17 @@ class Log(object):
             resp = {k: v for k, v in response.items()}
             self.lines.append(f'Res_Headers: {str(resp)};\t')
 
-            if isinstance(response, Response):
+            # if isinstance(response, Response):
+            try:
                 content = json.loads(response.content)
                 self.lines.append('Content: ' + str(content) + "\n")
+
+            except json.JSONDecodeError:
+                content = response.content.decode("utf-8").split('\n')
+                for line in content:
+                    if line.strip().startswith('<title'):
+                        self.lines.append('Content: ' + line.strip(' \t</title>') + "\n")
+
             self.lines.append('\n')
 
         # Exception content.

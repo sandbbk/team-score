@@ -1,0 +1,8 @@
+*.pyc
+*~
+__pycache__
+.venv
+.idea
+static/*
+teamscore.log
+

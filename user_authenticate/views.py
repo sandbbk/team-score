@@ -3,7 +3,7 @@ import jwt
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.contrib.auth.hashers import check_password
-from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
@@ -40,17 +40,20 @@ class UserDetail(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
 
     def get(self, request, *args, **kwargs):
+
         serializer = self.serializer_class(request.user)
-
-        # statistics for player's profile
-
-        player = request.user.player
-
         data = {}
         data.update(serializer.data)
-        data.update(player.stat)
+
+        # statistics for player's profile
+        try:
+            player = request.user.player
+            data.update(player.stat)
+        except ObjectDoesNotExist:
+            pass
         if data.get('password'):
             del data['password']
+
         return Response(data, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):

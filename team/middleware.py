@@ -23,7 +23,7 @@ class LoggerMiddleware(MiddlewareMixin):
         with open(file, 'a') as f:
             if f.writable():
                 f.writelines(buffer.getvalue())
-        buffer.close()
+            buffer.close()
 
     def process_request(self, request):
         self.write(request, settings.LOG_FILE)

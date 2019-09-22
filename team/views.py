@@ -51,12 +51,16 @@ class TeamViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_205_RESET_CONTENT)
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     data = {}
-    #     data.update(serializer.data)
-    #     data.update(team.stat)
-    #     return Response(data=data, status=status.HTTP_200_OK)
+    def retrieve(self, request, *args, **kwargs):
+        team = get_object_or_404(Team, pk=self.kwargs['pk'])
+        serializer = self.get_serializer(team)
+
+        data = {}
+        data.update(serializer.data)
+        data.update(team.stat)
+        data.update(team.rating_position)
+
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 class EventViewSet(viewsets.ModelViewSet):
