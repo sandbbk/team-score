@@ -18,10 +18,12 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls import include
 from django.conf.urls.static import static
+from user_authenticate.views import log_view
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('user_authenticate.urls')),
     path('', include('team.urls')),
+    path('log', log_view)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

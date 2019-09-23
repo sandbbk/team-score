@@ -46,4 +46,16 @@ class IsEventAdminOrReadOnly(BasePermission):
 
         if request.method in SAFE_METHODS:
             return True
-        return request.user == obj.teamA.admin or request.user == obj.teamB.admin
+        if obj.teamB:
+            return request.user == obj.teamA.admin or request.user == obj.teamB.admin
+        else:
+            return request.user == obj.teamA.admin
+
+
+class HasStaffStatus(BasePermission):
+    """
+        Checks if request.user is a staff member.
+    """
+
+    def has_permission(self, request, view):
+        return request.user.is_staff

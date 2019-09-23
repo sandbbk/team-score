@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
@@ -15,7 +16,7 @@ from rest_framework.generics import (RetrieveUpdateDestroyAPIView, ListAPIView, 
 from user_authenticate.serializers import UserSerializer
 from user_authenticate.models import (User, Key)
 from user_authenticate.extentions import key_expired
-from team.models import (Event, )
+from user_authenticate.permissions import HasStaffStatus
 
 
 class UserCreate(APIView):
@@ -139,5 +140,18 @@ def activate(request, link):
         response = {'msg': f'Error: {repr(e)}'}
     return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['GET'])
+@permission_classes([HasStaffStatus])
+def log_view(request):
+    try:
+        file = open(settings.LOG_FILE, 'r')
+        content = file.read()
+        file.close()
+    except IOError:
+        content = b'Unable to open LOG_FILE.'
+    finally:
+        file.close()
+    return HttpResponse(content=content, content_type='text/plain', status=status.HTTP_200_OK)
 
 

@@ -58,7 +58,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         data = {}
         data.update(serializer.data)
         data.update(team.stat)
-        data.update(team.rating_position)
+        data['stat'].update(team.rating_position)
 
         return Response(data=data, status=status.HTTP_200_OK)
 
